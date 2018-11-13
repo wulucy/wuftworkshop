@@ -12,6 +12,8 @@ def initialize(context):
     """
     Called once at the start of the algorithm.
     """
+    context.long_leverage = 0.5
+    context.short_leverage = -0.5
     # Rebalance every day, 1 hour after market open.
     algo.schedule_function(
         rebalance,
@@ -31,6 +33,8 @@ def initialize(context):
 
 
 def make_pipeline():
+    
+    m = 1.0
 
     # Base universe set to the Q500US
     # (like the S&P 500)
@@ -41,7 +45,7 @@ def make_pipeline():
     # Yesterday's close price
     yesterday_close = USEquityPricing.close.latest
     # Column of signals
-    signal = (yesterday_close > sma10)
+    signal = (yesterday_close > (m*sma10))
     
 
     pipe = Pipeline(columns={'sma10': sma10, 'close': yesterday_close, 'signal': signal},
@@ -67,12 +71,15 @@ def rebalance(context, data):
     longs = long_data.index
     shorts = short_data.index
     
+    l_percent = context.long_leverage / len(longs)
+    s_percent = context.short_leverage / len(shorts)
+    
     for l in longs:
         if data.can_trade(l):
-            order_target_percent(l, 1)
+            order_target_percent(l, l_percent)
     for s in shorts:
         if data.can_trade(s):
-            order_target_percent(s, 0)
+            order_target_percent(s, s_percent)
 
 def record_vars(context, data):
     """
