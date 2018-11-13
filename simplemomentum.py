@@ -41,7 +41,7 @@ def make_pipeline():
     # Yesterday's close price
     yesterday_close = USEquityPricing.close.latest
     # Column of signals
-    signal = sma10 > yesterday_close
+    signal = (yesterday_close > sma_10)
     
 
     pipe = Pipeline(columns={'sma10': sma10, 'close': yesterday_close, 'signal': signal},
@@ -80,4 +80,3 @@ def record_vars(context, data):
     """
     pass
 
-    pass
